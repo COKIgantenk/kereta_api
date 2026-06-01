@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:bIVpJaVchjeeBeZzrVMsebulfIHGotfj@centerbeam.proxy.rlwy.net:33099/railway"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
