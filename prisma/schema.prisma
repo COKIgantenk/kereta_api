@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:@127.0.0.1:3306/kereta_api"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
