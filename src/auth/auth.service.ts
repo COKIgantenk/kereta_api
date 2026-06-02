@@ -8,6 +8,7 @@ import { PelangganService } from 'src/pelanggan/pelanggan.service';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
+import { RegisterAdminDto } from './dto/register-admin.dto';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +41,21 @@ export class AuthService {
 
     return {
       message: 'Register berhasil',
+      user,
+    };
+  }
+
+  async registerAdmin(dto: RegisterAdminDto) {
+    const user = await this.usersService.createAdmin({
+      username: dto.username,
+      password: dto.password,
+      nama: dto.nama,
+      alamat: dto.alamat,
+      telp: dto.telp,
+    });
+
+    return {
+      message: 'Register admin berhasil',
       user,
     };
   }

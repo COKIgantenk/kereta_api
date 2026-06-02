@@ -103,6 +103,45 @@ export class UsersService {
     });
   }
 
+  async createAdmin(data: {
+    username: string;
+    password: string;
+    nama: string;
+    alamat: string;
+    telp: string;
+  }) {
+    const username = data.username.trim();
+    const password = data.password.trim();
+
+    const exist = await this.prisma.user.findUnique({
+      where: { username },
+    });
+
+    if (exist) {
+      throw new BadRequestException('Username sudah digunakan');
+    }
+
+    const hashed = await hash(password, 10);
+
+    return this.prisma.user.create({
+      data: {
+        username,
+        password: hashed,
+        role: 'ADMIN',
+        petugas: {
+          create: {
+            nama: data.nama,
+            alamat: data.alamat,
+            telp: data.telp,
+          },
+        },
+      },
+      include: {
+        petugas: true,
+      },
+    });
+  }
+
   async bootstrapAdmin(data: {
     username: string;
     password: string;
