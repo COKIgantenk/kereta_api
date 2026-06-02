@@ -1,14 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { getJwtSecret } from '../jwt-secret';
 
 interface JwtPayload {
-  sub: number;
-  email: string;
+  sub: string;
+  username: string;
   role: string;
 }
 
@@ -17,14 +14,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_SECRET,
+      secretOrKey: getJwtSecret(),
     });
   }
 
   validate(payload: JwtPayload) {
     return {
       id: payload.sub,
-      email: payload.email,
+      sub: payload.sub,
+      username: payload.username,
       role: payload.role,
     };
   }

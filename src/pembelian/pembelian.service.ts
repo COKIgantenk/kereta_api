@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePembelianDto } from './dto/create-pembelian.dto';
-import * as QRCode from 'qrcode';
+import { toDataURL } from 'qrcode';
 import PDFDocument from 'pdfkit';
 import { Response } from 'express';
 
@@ -42,12 +42,20 @@ export class PembelianService {
         },
       });
 
+      const pelanggan = await tx.pelanggan.findUnique({
+        where: { userId },
+      });
+
+      if (!pelanggan) {
+        throw new NotFoundException('Pelanggan tidak ditemukan');
+      }
+
       const total = Number(jadwal.harga) * dto.penumpang.length;
 
       const pembelian = await tx.pembelian.create({
         data: {
           kodeBooking: `TRX-${Date.now()}`,
-          pelangganId: userId,
+          pelangganId: pelanggan.id,
           jadwalId: dto.jadwalId,
           total,
           status: 'PENDING',
@@ -189,8 +197,7 @@ export class PembelianService {
       id: data.id,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const qrImage = await QRCode.toDataURL(qrData);
+    const qrImage = await toDataURL(qrData);
 
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
 
@@ -210,8 +217,7 @@ export class PembelianService {
     doc.text(`Kereta: ${data.jadwal.kereta.nama}`);
     doc.text(`Asal: ${data.jadwal.asal}`);
     doc.text(`Tujuan: ${data.jadwal.tujuan}`);
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    doc.text(`Tanggal: ${data.jadwal.tanggalBerangkat}`);
+    doc.text(`Tanggal: ${data.jadwal.tanggalBerangkat.toISOString()}`);
 
     doc.moveDown();
 
@@ -223,8 +229,8 @@ export class PembelianService {
 
     doc.moveDown();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const qrBuffer = Buffer.from(qrImage.split(',')[1], 'base64');
+    const qrBase64 = qrImage.split(',')[1];
+    const qrBuffer = Buffer.from(qrBase64, 'base64');
 
     doc.image(qrBuffer, {
       fit: [150, 150],

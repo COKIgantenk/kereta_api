@@ -10,12 +10,14 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
-
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:deploy": "prisma migrate deploy",
-
-    "deploy": "npm run prisma:generate && npm run prisma:deploy && npm run build && npm run start:prod"
+    "deploy": "npm run prisma:generate && npm run prisma:deploy && npm run prisma:seed && npm run build && npm run start:prod",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "test": "jest --passWithNoTests",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "prisma:seed": "prisma db seed"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -63,5 +65,8 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
+  },
+  "prisma": {
+    "seed": "ts-node --files prisma/seed.ts"
   }
 }

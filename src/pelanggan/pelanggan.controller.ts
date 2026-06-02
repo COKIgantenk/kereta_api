@@ -13,6 +13,8 @@ import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { UpdatePelangganDto } from './dto/update-pelanggan.dto';
+import type { AuthenticatedRequest } from 'src/common/types/authenticated-request.interface';
 
 @ApiBearerAuth()
 @Controller('pelanggan')
@@ -28,15 +30,16 @@ export class PelangganController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  getProfile(@Req() req: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+  getProfile(@Req() req: AuthenticatedRequest) {
     return this.pelangganService.findByUserId(req.user.sub);
   }
 
   @Patch('me')
   @UseGuards(JwtAuthGuard)
-  updateProfile(@Req() req: any, @Body() body: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+  updateProfile(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: UpdatePelangganDto,
+  ) {
     return this.pelangganService.updateByUserId(req.user.sub, body);
   }
 
@@ -50,7 +53,7 @@ export class PelangganController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  update(@Param('id') id: string, @Body() body: any) {
+  update(@Param('id') id: string, @Body() body: UpdatePelangganDto) {
     return this.pelangganService.update(id, body);
   }
 
