@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
+import { hash } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -21,13 +21,11 @@ export class UsersService {
 
     if (exist) throw new BadRequestException('Username already exists');
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const hashedPassword = await hash(data.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
         username: data.username,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         password: hashedPassword,
         role: data.role,
       },
@@ -88,8 +86,7 @@ export class UsersService {
     if (!user) throw new NotFoundException('User not found');
 
     if (data.password) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      data.password = await bcrypt.hash(data.password, 10);
+      data.password = await hash(data.password, 10);
     }
 
     return this.prisma.user.update({
@@ -132,13 +129,11 @@ export class UsersService {
       throw new BadRequestException('Username sudah digunakan');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const hashed = await bcrypt.hash(password, 10);
+    const hashed = await hash(password, 10);
 
     return this.prisma.user.create({
       data: {
         username,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         password: hashed,
         role: 'ADMIN',
         petugas: {
