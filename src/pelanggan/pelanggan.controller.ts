@@ -12,7 +12,9 @@ import { PelangganService } from './pelanggan.service';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('pelanggan')
 export class PelangganController {
   constructor(private readonly pelangganService: PelangganService) {}
