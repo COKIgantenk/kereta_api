@@ -35,11 +35,5 @@ Jika request `Bootstrap Admin` atau `Register Pelanggan` mengembalikan pesan dat
 - `adminPassword`: `password123`
 - `pelangganUsername`: `pelanggan1`
 - `pelangganPassword`: `password123`
-- `newAdminUsername`: `admin2`
-- `newAdminPassword`: `password123`
 
 Ubah variable ini hanya jika port/server atau credential lokal berbeda.
-
-## Register Admin Baru
-
-Setelah login sebagai super admin/admin dan `adminToken` tersimpan, gunakan request **Auth → Register Admin (Admin Only)** untuk membuat akun admin tambahan tanpa mengubah role manual di database.
