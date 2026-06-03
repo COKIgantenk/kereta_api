@@ -4,6 +4,10 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  pembelianDetailInclude,
+  presentPembelian,
+} from 'src/pembelian/pembelian-presenter';
 
 @Injectable()
 export class PaymentService {
@@ -13,7 +17,9 @@ export class PaymentService {
     const payment = await this.prisma.payment.findUnique({
       where: { pembelianId },
       include: {
-        pembelian: true,
+        pembelian: {
+          include: pembelianDetailInclude,
+        },
       },
     });
 
@@ -21,7 +27,10 @@ export class PaymentService {
       throw new NotFoundException('Payment tidak ditemukan');
     }
 
-    return payment;
+    return {
+      ...payment,
+      pembelian: presentPembelian(payment.pembelian),
+    };
   }
 
   async confirm(pembelianId: string) {
@@ -38,7 +47,7 @@ export class PaymentService {
         throw new BadRequestException('Sudah dibayar');
       }
 
-      const payment = await tx.payment.update({
+      await tx.payment.update({
         where: { pembelianId },
         data: {
           paidAt: new Date(),
@@ -52,7 +61,23 @@ export class PaymentService {
         },
       });
 
-      return payment;
+      const payment = await tx.payment.findUnique({
+        where: { pembelianId },
+        include: {
+          pembelian: {
+            include: pembelianDetailInclude,
+          },
+        },
+      });
+
+      if (!payment) {
+        throw new NotFoundException('Payment tidak ditemukan');
+      }
+
+      return {
+        ...payment,
+        pembelian: presentPembelian(payment.pembelian),
+      };
     });
   }
 }

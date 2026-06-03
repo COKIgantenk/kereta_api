@@ -89,7 +89,16 @@ export class PembelianService {
         },
       });
 
-      return pembelian;
+      const created = await tx.pembelian.findUnique({
+        where: { id: pembelian.id },
+        include: pembelianDetailInclude,
+      });
+
+      if (!created) {
+        throw new NotFoundException('Pembelian tidak ditemukan');
+      }
+
+      return presentPembelian(created);
     });
   }
 
@@ -110,12 +119,15 @@ export class PembelianService {
         },
       });
 
-      return tx.pembelian.update({
+      const updated = await tx.pembelian.update({
         where: { id },
         data: {
           status: 'PAID',
         },
+        include: pembelianDetailInclude,
       });
+
+      return presentPembelian(updated);
     });
   }
 
@@ -149,33 +161,22 @@ export class PembelianService {
         },
       });
 
-      return tx.pembelian.update({
+      const updated = await tx.pembelian.update({
         where: { id },
         data: {
           status: 'CANCELED',
         },
+        include: pembelianDetailInclude,
       });
+
+      return presentPembelian(updated);
     });
   }
 
   async getTiket(id: string) {
     const data = await this.prisma.pembelian.findUnique({
       where: { id },
-      include: {
-        pelanggan: true,
-        detail: {
-          include: {
-            kursi: true,
-            gerbong: true,
-          },
-        },
-        jadwal: {
-          include: {
-            kereta: true,
-          },
-        },
-        payment: true,
-      },
+      include: pembelianDetailInclude,
     });
 
     if (!data) {
@@ -240,40 +241,43 @@ export class PembelianService {
     doc.end();
   }
 
-  findAll() {
-    return this.prisma.pembelian.findMany({
-      include: {
-        detail: {
-          include: {
-            kursi: true,
-            gerbong: true,
-          },
-        },
-        jadwal: true,
-        payment: true,
-      },
+  async findAll() {
+    const data = await this.prisma.pembelian.findMany({
+      include: pembelianDetailInclude,
+      orderBy: { createdAt: 'desc' },
     });
+
+    return data.map(presentPembelian);
+  }
+
+  async findMine(userId: string) {
+    const pelanggan = await this.prisma.pelanggan.findUnique({
+      where: { userId },
+    });
+
+    if (!pelanggan) {
+      throw new NotFoundException('Pelanggan tidak ditemukan');
+    }
+
+    const data = await this.prisma.pembelian.findMany({
+      where: { pelangganId: pelanggan.id },
+      include: pembelianDetailInclude,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return data.map(presentPembelian);
   }
 
   async findOne(id: string) {
     const data = await this.prisma.pembelian.findUnique({
       where: { id },
-      include: {
-        detail: {
-          include: {
-            kursi: true,
-            gerbong: true,
-          },
-        },
-        jadwal: true,
-        payment: true,
-      },
+      include: pembelianDetailInclude,
     });
 
     if (!data) {
       throw new NotFoundException('Pembelian tidak ditemukan');
     }
 
-    return data;
+    return presentPembelian(data);
   }
 }

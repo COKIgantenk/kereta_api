@@ -39,6 +39,12 @@ export class PembelianController {
     return this.pembelianService.cancelPembelian(id);
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  findMine(@Req() req: AuthenticatedRequest) {
+    return this.pembelianService.findMine(req.user.sub);
+  }
+
   @Get(':id/tiket')
   @UseGuards(JwtAuthGuard)
   generateTiket(@Param('id') id: string, @Res() res: express.Response) {
