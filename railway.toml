@@ -1,8 +1,7 @@
 [build]
 builder = "nixpacks"
-buildCommand = "npm run prisma:generate && npm run build && ls -la dist/"
 
 [deploy]
-startCommand = "npm run prisma:deploy && node dist/main.js"
+startCommand = "npm run prisma:generate && npm run build && npm run prisma:deploy && node dist/main.js"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
