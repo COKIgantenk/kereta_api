@@ -67,14 +67,6 @@
     {
       "key": "pembelianId",
       "value": ""
-    },
-    {
-      "key": "newAdminUsername",
-      "value": "admin2"
-    },
-    {
-      "key": "newAdminPassword",
-      "value": "password123"
     }
   ],
   "item": [
@@ -558,30 +550,6 @@
           ]
         },
         {
-          "name": "List Tiket Saya (Pelanggan)",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{pelangganToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/pembelian/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["pembelian", "me"]
-            },
-            "description": "Mengambil semua pemesanan milik pelanggan login. Response berisi statusPemesanan BOOKED/SUCCESS/CANCELED, kereta, gerbong, asal/tujuan, jam berangkat, dan jam tiba."
-          },
-          "response": []
-        },
-        {
           "name": "Get Payment",
           "request": {
             "method": "GET",
@@ -731,56 +699,6 @@
                   "if (data.access_token) {",
                   "  pm.collectionVariables.set('adminToken', data.access_token);",
                   "}"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Register Admin (Admin Only)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/auth/register-admin",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "register-admin"]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{adminToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"{{newAdminUsername}}\",\n  \"password\": \"{{newAdminPassword}}\",\n  \"nama\": \"Admin Baru\",\n  \"alamat\": \"Jakarta\",\n  \"telp\": \"083333333333\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "description": "Daftarkan admin baru. Wajib login sebagai ADMIN/super admin terlebih dahulu."
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status code 2xx', function () {",
-                  "  pm.expect(pm.response.code).to.be.within(200, 299);",
-                  "});"
                 ]
               }
             }
@@ -1828,30 +1746,6 @@
               }
             }
           ]
-        },
-        {
-          "name": "List Tiket Saya (Pelanggan)",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{pelangganToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/pembelian/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["pembelian", "me"]
-            },
-            "description": "Mengambil semua pemesanan milik pelanggan login. Response berisi statusPemesanan BOOKED/SUCCESS/CANCELED, kereta, gerbong, asal/tujuan, jam berangkat, dan jam tiba."
-          },
-          "response": []
         },
         {
           "name": "Get Pembelian",

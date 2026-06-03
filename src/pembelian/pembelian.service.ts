@@ -5,10 +5,6 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePembelianDto } from './dto/create-pembelian.dto';
-import {
-  pembelianDetailInclude,
-  presentPembelian,
-} from './pembelian-presenter';
 import { toDataURL } from 'qrcode';
 import PDFDocument from 'pdfkit';
 import { Response } from 'express';

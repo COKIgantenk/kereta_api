@@ -35,15 +35,5 @@ Jika request `Bootstrap Admin` atau `Register Pelanggan` mengembalikan pesan dat
 - `adminPassword`: `password123`
 - `pelangganUsername`: `pelanggan1`
 - `pelangganPassword`: `password123`
-- `newAdminUsername`: `admin2`
-- `newAdminPassword`: `password123`
 
 Ubah variable ini hanya jika port/server atau credential lokal berbeda.
-
-## Register Admin Baru
-
-Setelah login sebagai super admin/admin dan `adminToken` tersimpan, gunakan request **Auth → Register Admin (Admin Only)** untuk membuat akun admin tambahan tanpa mengubah role manual di database.
-
-## Endpoint Tiket Pelanggan
-
-Untuk halaman tiket pelanggan di frontend, gunakan endpoint **GET `/api/pembelian/me`** dengan Bearer Token pelanggan. Endpoint ini mengembalikan semua pemesanan milik pelanggan login lengkap dengan `statusPemesanan` (`BOOKED`, `SUCCESS`, atau `CANCELED`), data kereta, gerbong, kursi, asal, tujuan, jam berangkat, dan jam tiba. Di Postman request-nya tersedia sebagai **Pembelian → List Tiket Saya (Pelanggan)**.
