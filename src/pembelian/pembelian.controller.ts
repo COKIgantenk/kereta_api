@@ -15,6 +15,7 @@ import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { CreatePembelianDto } from './dto/create-pembelian.dto';
 import express from 'express';
+import type { AuthenticatedRequest } from 'src/common/types/authenticated-request.interface';
 
 @Controller('pembelian')
 export class PembelianController {
@@ -22,8 +23,7 @@ export class PembelianController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Req() req: any, @Body() dto: CreatePembelianDto) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+  create(@Req() req: AuthenticatedRequest, @Body() dto: CreatePembelianDto) {
     return this.pembelianService.create(req.user.sub, dto);
   }
 
@@ -37,6 +37,12 @@ export class PembelianController {
   @UseGuards(JwtAuthGuard)
   cancel(@Param('id') id: string) {
     return this.pembelianService.cancelPembelian(id);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  findMine(@Req() req: AuthenticatedRequest) {
+    return this.pembelianService.findMine(req.user.sub);
   }
 
   @Get(':id/tiket')

@@ -5,7 +5,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePembelianDto } from './dto/create-pembelian.dto';
-import * as QRCode from 'qrcode';
+import {
+  pembelianDetailInclude,
+  presentPembelian,
+} from './pembelian-presenter';
+import { toDataURL } from 'qrcode';
 import PDFDocument from 'pdfkit';
 import { Response } from 'express';
 
@@ -42,12 +46,20 @@ export class PembelianService {
         },
       });
 
+      const pelanggan = await tx.pelanggan.findUnique({
+        where: { userId },
+      });
+
+      if (!pelanggan) {
+        throw new NotFoundException('Pelanggan tidak ditemukan');
+      }
+
       const total = Number(jadwal.harga) * dto.penumpang.length;
 
       const pembelian = await tx.pembelian.create({
         data: {
           kodeBooking: `TRX-${Date.now()}`,
-          pelangganId: userId,
+          pelangganId: pelanggan.id,
           jadwalId: dto.jadwalId,
           total,
           status: 'PENDING',
@@ -81,7 +93,16 @@ export class PembelianService {
         },
       });
 
-      return pembelian;
+      const created = await tx.pembelian.findUnique({
+        where: { id: pembelian.id },
+        include: pembelianDetailInclude,
+      });
+
+      if (!created) {
+        throw new NotFoundException('Pembelian tidak ditemukan');
+      }
+
+      return presentPembelian(created);
     });
   }
 
@@ -102,12 +123,15 @@ export class PembelianService {
         },
       });
 
-      return tx.pembelian.update({
+      const updated = await tx.pembelian.update({
         where: { id },
         data: {
           status: 'PAID',
         },
+        include: pembelianDetailInclude,
       });
+
+      return presentPembelian(updated);
     });
   }
 
@@ -141,33 +165,22 @@ export class PembelianService {
         },
       });
 
-      return tx.pembelian.update({
+      const updated = await tx.pembelian.update({
         where: { id },
         data: {
           status: 'CANCELED',
         },
+        include: pembelianDetailInclude,
       });
+
+      return presentPembelian(updated);
     });
   }
 
   async getTiket(id: string) {
     const data = await this.prisma.pembelian.findUnique({
       where: { id },
-      include: {
-        pelanggan: true,
-        detail: {
-          include: {
-            kursi: true,
-            gerbong: true,
-          },
-        },
-        jadwal: {
-          include: {
-            kereta: true,
-          },
-        },
-        payment: true,
-      },
+      include: pembelianDetailInclude,
     });
 
     if (!data) {
@@ -189,8 +202,7 @@ export class PembelianService {
       id: data.id,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const qrImage = await QRCode.toDataURL(qrData);
+    const qrImage = await toDataURL(qrData);
 
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
 
@@ -210,8 +222,7 @@ export class PembelianService {
     doc.text(`Kereta: ${data.jadwal.kereta.nama}`);
     doc.text(`Asal: ${data.jadwal.asal}`);
     doc.text(`Tujuan: ${data.jadwal.tujuan}`);
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    doc.text(`Tanggal: ${data.jadwal.tanggalBerangkat}`);
+    doc.text(`Tanggal: ${data.jadwal.tanggalBerangkat.toISOString()}`);
 
     doc.moveDown();
 
@@ -223,8 +234,8 @@ export class PembelianService {
 
     doc.moveDown();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const qrBuffer = Buffer.from(qrImage.split(',')[1], 'base64');
+    const qrBase64 = qrImage.split(',')[1];
+    const qrBuffer = Buffer.from(qrBase64, 'base64');
 
     doc.image(qrBuffer, {
       fit: [150, 150],
@@ -234,40 +245,43 @@ export class PembelianService {
     doc.end();
   }
 
-  findAll() {
-    return this.prisma.pembelian.findMany({
-      include: {
-        detail: {
-          include: {
-            kursi: true,
-            gerbong: true,
-          },
-        },
-        jadwal: true,
-        payment: true,
-      },
+  async findAll() {
+    const data = await this.prisma.pembelian.findMany({
+      include: pembelianDetailInclude,
+      orderBy: { createdAt: 'desc' },
     });
+
+    return data.map(presentPembelian);
+  }
+
+  async findMine(userId: string) {
+    const pelanggan = await this.prisma.pelanggan.findUnique({
+      where: { userId },
+    });
+
+    if (!pelanggan) {
+      throw new NotFoundException('Pelanggan tidak ditemukan');
+    }
+
+    const data = await this.prisma.pembelian.findMany({
+      where: { pelangganId: pelanggan.id },
+      include: pembelianDetailInclude,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return data.map(presentPembelian);
   }
 
   async findOne(id: string) {
     const data = await this.prisma.pembelian.findUnique({
       where: { id },
-      include: {
-        detail: {
-          include: {
-            kursi: true,
-            gerbong: true,
-          },
-        },
-        jadwal: true,
-        payment: true,
-      },
+      include: pembelianDetailInclude,
     });
 
     if (!data) {
       throw new NotFoundException('Pembelian tidak ditemukan');
     }
 
-    return data;
+    return presentPembelian(data);
   }
 }

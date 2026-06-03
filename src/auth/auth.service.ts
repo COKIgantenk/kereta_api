@@ -6,8 +6,9 @@ import {
 import { UsersService } from 'src/users/users.service';
 import { PelangganService } from 'src/pelanggan/pelanggan.service';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import { compare } from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
+import { RegisterAdminDto } from './dto/register-admin.dto';
 
 @Injectable()
 export class AuthService {
@@ -44,6 +45,21 @@ export class AuthService {
     };
   }
 
+  async registerAdmin(dto: RegisterAdminDto) {
+    const user = await this.usersService.createAdmin({
+      username: dto.username,
+      password: dto.password,
+      nama: dto.nama,
+      alamat: dto.alamat,
+      telp: dto.telp,
+    });
+
+    return {
+      message: 'Register admin berhasil',
+      user,
+    };
+  }
+
   async validateUser(username: string, password: string) {
     const user = await this.usersService.findByUsername(username);
 
@@ -51,8 +67,7 @@ export class AuthService {
       throw new UnauthorizedException('User tidak ditemukan');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await compare(password, user.password);
 
     if (!isMatch) {
       throw new UnauthorizedException('Password salah');

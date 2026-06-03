@@ -8,6 +8,9 @@ import {
   Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { BootstrapAdminDto } from './dto/bootstrap-admin.dto';
 
 @Controller('users')
 export class UsersController {
@@ -16,11 +19,7 @@ export class UsersController {
   @Post()
   create(
     @Body()
-    body: {
-      username: string;
-      password: string;
-      role: 'ADMIN' | 'PELANGGAN';
-    },
+    body: CreateUserDto,
   ) {
     return this.usersService.create(body);
   }
@@ -39,10 +38,7 @@ export class UsersController {
   update(
     @Param('id') id: string,
     @Body()
-    body: {
-      username?: string;
-      password?: string;
-    },
+    body: UpdateUserDto,
   ) {
     return this.usersService.update(id, body);
   }
@@ -53,7 +49,7 @@ export class UsersController {
   }
 
   @Post('bootstrap-admin')
-  createFirstAdmin(@Body() body: any) {
+  createFirstAdmin(@Body() body: BootstrapAdminDto) {
     return this.usersService.bootstrapAdmin(body);
   }
 }
