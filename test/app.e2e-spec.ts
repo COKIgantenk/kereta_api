@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
@@ -13,7 +14,7 @@ describe('AppController (e2e)', () => {
       imports: [AppModule],
     })
       .overrideProvider(PrismaService)
-      .useValue({ onModuleInit: jest.fn() })
+      .useValue({ onModuleInit: async () => {} })
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -24,8 +25,8 @@ describe('AppController (e2e)', () => {
     await app.close();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
+  it('/ (GET)', async () => {
+    await request(app.getHttpServer())
       .get('/')
       .expect(200)
       .expect('Hello World!');
